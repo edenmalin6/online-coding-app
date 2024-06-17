@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
 import axios, { AxiosError } from "axios";
@@ -7,6 +7,7 @@ const CodeBlockPage = () => {
   const { title } = useParams();
   const [codeBlock, setCodeBlock] = useState([]);
   const [isMentor, setIsMentor] = useState(true);
+  const navigate = useNavigate()
 
   useEffect(() => {
     async function getCodeBlock() {
@@ -52,6 +53,26 @@ const CodeBlockPage = () => {
         setMentor();
       }
     });
+
+  // Set up SSE connection
+    const eventSource = new EventSource("http://localhost:8080/events");
+
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.title === title) {
+        setCodeBlock(data);
+      }
+    };
+
+    eventSource.onerror = (event) => {
+      console.error("EventSource failed:", event);
+      eventSource.close();
+    };
+
+    // Clean up SSE connection when the component unmounts
+    return () => {
+      eventSource.close();
+    };
   }, [title]);
 
   const handleCodeEdit = async (newCode) => {
@@ -70,14 +91,20 @@ const CodeBlockPage = () => {
       }
     }
   };
-
+const goBackBtn = () => {
+  navigate(-1)
+}
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="flex ">
-        <h1 className="mt-5 text-center">{codeBlock.title}</h1>
-        <button className="bg-c">Go Back</button>
-      </div>
-      <div className="pt-5">
+    <div className="">  
+        <h1 className="text-center text-xl">{codeBlock.title}</h1> 
+        <button
+        onClick={goBackBtn}
+         className="bg-blue-800 hover:bg-blue-900
+         text-white font-bold py-2
+          px-4 rounded-full ml-[230px]">
+           Go Back
+        </button>
+      <div className="pt-5 flex flex-col items-center justify-center">
         <Editor
           height="250px"
           width="800px"
