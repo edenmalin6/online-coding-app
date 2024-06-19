@@ -20,45 +20,7 @@ const LobbyPage = () => {
       }
     }
     getCodeBlocks();
-
-    //Set SSE connection
-    const eventSource = new EventSource("http://localhost:8080/events");
-
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      handleUpdate(data);
-    };
-
-    eventSource.onerror = (event) => {
-      console.error("EventSource failed:", event);
-      eventSource.close();
-    };
-
-    return () => {
-      eventSource.close();
-    };
   }, []);
-
-  const handleUpdate = (data) => {
-    const { title } = data;
-
-    // Update the code blocks state based on incoming data
-    setCodeBlocks((prevCodeBlocks) => {
-      const existingCodeBlockIndex = prevCodeBlocks.findIndex(
-        (block) => block === title
-      );
-
-      if (existingCodeBlockIndex !== -1) {
-        // If the code block already exists, update it
-        return prevCodeBlocks.map((block, index) =>
-          index === existingCodeBlockIndex ? title : block
-        );
-      } else {
-        // If the code block doesn't exist, add it
-        return [...prevCodeBlocks, title];
-      }
-    });
-  };
 
   return (
     <div className="text-center ">
